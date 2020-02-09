@@ -1,6 +1,11 @@
 package com.patho.slidewatcher.service
 
 import com.patho.slidewatcher.Config
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.filefilter.FileFilterUtils
+import org.apache.commons.io.filefilter.HiddenFileFilter
+import org.apache.commons.io.filefilter.IOFileFilter
+import org.apache.commons.io.filefilter.RegexFileFilter
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
@@ -22,9 +27,11 @@ class WatcherService @Autowired constructor(
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
     fun watchDir(dir: String) {
-        val observer = FileAlterationObserver(getResource(dir).file)
+
+        val observer = FileAlterationObserver(getResource(dir).file, FileFilterUtils.or(getFileFilter(), getDirFilter()))
 
         logger.info("Start ACTIVITY, Monitoring $dir")
+
         observer.addListener(object : FileAlterationListenerAdaptor() {
             override fun onDirectoryCreate(file: File) {
                 logger.info("New Folder Created:" + file.name)
@@ -46,9 +53,9 @@ class WatcherService @Autowired constructor(
                 logger.info("File Renames:" + file.name + ": NO ACTION")
             }
         })
-        /* Set to monitor changes for 500 ms */
-        /* Set to monitor changes for 500 ms */
+
         val monitor = FileAlterationMonitor(1000, observer)
+
         try {
             monitor.start()
         } catch (e: Exception) {
@@ -57,6 +64,21 @@ class WatcherService @Autowired constructor(
         }
     }
 
+    fun completeRun(dir: String) {
+        val fiels = FileUtils.listFiles(File(dir), getFileFilter(), getDirFilter())
+    }
+
+    private fun getFileFilter(): IOFileFilter {
+        return FileFilterUtils.and(
+                FileFilterUtils.fileFileFilter(),
+                FileFilterUtils.suffixFileFilter(".ndpi"))
+    }
+
+    private fun getDirFilter(): IOFileFilter {
+        return FileFilterUtils.and(
+                FileFilterUtils.directoryFileFilter(),
+                HiddenFileFilter.VISIBLE, RegexFileFilter("[0-9]{4,}"))
+    }
 
     private fun getFolder(path: String): String {
         val year = LocalDate.now().year.toString()
