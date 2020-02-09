@@ -1,0 +1,29 @@
+spring:
+  mail:
+    host: smtp.ukl.uni-freiburg.de
+    port: 465
+    properties:
+      mail:
+        debug: false
+        smtp:
+          starttls.enable: true
+          ssl.trust: smtp.ukl.uni-freiburg.de
+          auth: false
+    protocol: smtps
+slidewatcher:
+  dirToWatch:
+    - file:D:/test
+
+  uploadTarget: http://127.0.0.1:8080/rest/pdf
+  useAuthentication: true
+  authenticationToken: ""
+
+  errorAddresses:
+    - andreas.glatz@uniklinik-freiburg.de
+
+logging:
+  level:
+    root: error
+    com:
+      patho:
+        slidewatcher: DEBUG
