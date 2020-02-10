@@ -16,7 +16,7 @@ class RestService {
 
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
-    fun uploadFile(scannedCase: ScannedCase, targetURl: String, useAuthentication: Boolean = false, token: String = "") : Boolean{
+    fun uploadFile(scannedCase: ScannedCase, targetURl: String, useAuthentication: Boolean = false, token: String = ""): Boolean {
         val bodyMap: MultiValueMap<String, Any> = LinkedMultiValueMap()
         bodyMap.add("caseID", scannedCase.caseID)
         bodyMap.add("slides", Gson().toJson(scannedCase.scannedSlides))
@@ -31,16 +31,20 @@ class RestService {
 
         logger.debug("Sending pdf (${scannedCase.caseID}) to $targetURl")
 
-        return try  {
+        return try {
             val restTemplate = RestTemplate()
             val response: ResponseEntity<String> = restTemplate.exchange(targetURl,
                     HttpMethod.POST, requestEntity, String::class.java)
             logger.debug("response status: " + response.statusCode)
             logger.debug("response body: " + response.body)
             response.statusCode.toString() == "200 OK"
-        }catch (e : Exception){
+        } catch (e: Exception) {
             logger.debug("Failed!")
             false
         }
+    }
+
+    fun getSlideInfo(taskID: String, uniqueSlideID: String): String {
+        return ""
     }
 }

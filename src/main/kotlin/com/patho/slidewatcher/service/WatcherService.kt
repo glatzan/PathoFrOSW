@@ -1,6 +1,8 @@
 package com.patho.slidewatcher.service
 
 import com.patho.slidewatcher.Config
+import com.patho.slidewatcher.model.ScannedCase
+import com.patho.slidewatcher.model.ScannedSlide
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.FileFilterUtils
 import org.apache.commons.io.filefilter.HiddenFileFilter
@@ -17,12 +19,14 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Service
 import java.io.File
 import java.time.LocalDate
+import kotlin.math.log
 
 
 @Service
 class WatcherService @Autowired constructor(
         private val resourceLoader: ResourceLoader,
-        private val config: Config) {
+        private val config: Config,
+        private val restService: RestService) {
 
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -65,7 +69,44 @@ class WatcherService @Autowired constructor(
     }
 
     fun completeRun(dir: String) {
-        val fiels = FileUtils.listFiles(File(dir), getFileFilter(), getDirFilter())
+        val files = FileUtils.listFiles(File(dir), getFileFilter(), getDirFilter())
+
+        val data: HashMap<String, ScannedCase> = hashMapOf()
+
+        fun getScannedCase(id: String): ScannedCase {
+            return data[id] ?: return data.put(id, ScannedCase(id)) as ScannedCase
+        }
+
+        for (file in files) {
+            val name = file.name
+
+            // if matches taskID_unqieSlideID_staining.ndpi xxxxxx_xxx_x*.ndpi
+            if (name.matches(Regex("[0-9]{6,}_[0-9]{3,}_(.*?)\\.ndpi"))) {
+                // file was renamed
+                val case = getScannedCase(name.substringBefore("_"))
+                val slide = ScannedSlide()
+                slide.name = name
+                slide.uniqueSlideID = name.substring(7,9)
+                case.scannedSlides.add(slide)
+                continue
+            }else if(name.matches(Regex("[0-9]{9,} - (.*?)\\.ndpi"))) {
+                val case = getScannedCase(name.substring(0,5))
+                val slide = ScannedSlide()
+                slide.name = name
+                slide.uniqueSlideID = name.substring(6,8)
+                case.scannedSlides.add(slide)
+
+                val newName = restService.getSlideInfo(case.caseID,slide.uniqueSlideID)
+
+                // TODO rename
+                continue
+            }else{
+                // unknown file
+            }
+
+
+        }
+
     }
 
     private fun getFileFilter(): IOFileFilter {
