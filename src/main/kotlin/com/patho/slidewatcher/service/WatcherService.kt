@@ -55,10 +55,10 @@ class WatcherService @Autowired constructor(
     /**
      * Scan the whole dir on startup
      */
-    fun scanDir(dir : String){
+    fun scanDir(dir: String) {
         val files = FileUtils.listFiles(File(dir), getFileFilter(), getDirFilter())
 
-        for(file in files){
+        for (file in files) {
             processFile(file)
         }
     }
@@ -76,14 +76,14 @@ class WatcherService @Autowired constructor(
 
             val infoRequest = restService.getSlideInfo(case.caseID, slide.uniqueSlideID, config.slideInfoRestEndpoint, config.useAuthentication, config.authenticationToken)
 
-            if (infoRequest == null) {
+            if (!infoRequest.isPresent) {
                 mailService.sendMail(config.errorAddresses.first(), "Error, could not get SlideInfo",
                         "Error File ${case.toJson()}, orig: ${file.absolutePath}")
                 // TODO move file
                 return
             }
 
-            val newName = getNewName(name, infoRequest)
+            val newName = getNewName(name, infoRequest.get())
             val newFolder = getNewDir(name)
 
             // setting new name

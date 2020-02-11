@@ -55,27 +55,13 @@ class RestService {
      * Remove scanned slide
      */
     fun removeScannedSlide(caseID: String, uniqueSlideID: String, targetURl: String, useAuthentication: Boolean = false, token: String = ""): Boolean {
-        val restTemplate = RestTemplate()
-        val headers = HttpHeaders()
-        if (useAuthentication)
-            headers.set("Authorization", token);
-
-        val params: MutableMap<String, String> = HashMap()
-        params["caseID"] = caseID
-        params["uniqueSlideID"] = uniqueSlideID
-
-        val builder = UriComponentsBuilder.fromHttpUrl(targetURl)
-                .queryParam("caseID", caseID)
-                .queryParam("uniqueSlideID", uniqueSlideID)
-
-        val entity = HttpEntity("parameters", headers)
+        val util = getRestTemplateForGetRequest(targetURl, useAuthentication, token, caseID, uniqueSlideID)
 
         try {
-            val result = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity, String::class.java)
+            val result = RestTemplate().exchange(util.second.toUriString(), HttpMethod.GET, util.first, String::class.java)
             if (result.body.isNullOrEmpty() && result.body == "success")
                 return true
         } catch (e: RestClientException) {
-
         }
         return false
     }
@@ -83,12 +69,18 @@ class RestService {
     /**
      * Requesting slide infos (db name = slideID)
      */
-    fun getSlideInfo(taskID: String, uniqueSlideID: String, targetURl: String, useAuthentication: Boolean = false, token: String = ""): SlideInfoResult? {
+    fun getSlideInfo(caseID: String, uniqueSlideID: String, targetURl: String, useAuthentication: Boolean = false, token: String = ""): Optional<SlideInfoResult> {
+        val util = getRestTemplateForGetRequest(targetURl, useAuthentication, token, caseID, uniqueSlideID)
 
+        return try {
+            val result = RestTemplate().exchange(util.second.toUriString(), HttpMethod.GET, util.first, SlideInfoResult::class.java)
+            Optional.ofNullable(result.body)
+        } catch (e: RestClientException) {
+            Optional.empty()
+        }
     }
 
-    private fun getRestTemplateForGetRequest(targetURl : String, useAuthentication: Boolean = false, token: String = "", caseID: String, uniqueSlideID: String): RestTemplate {
-        val restTemplate = RestTemplate()
+    private fun getRestTemplateForGetRequest(targetURl: String, useAuthentication: Boolean = false, token: String = "", caseID: String, uniqueSlideID: String): Pair<HttpEntity<String>, UriComponentsBuilder> {
         val headers = HttpHeaders()
         if (useAuthentication)
             headers.set("Authorization", token);
@@ -103,6 +95,6 @@ class RestService {
 
         val entity = HttpEntity("parameters", headers)
 
-        return restTemplate
+        return Pair(entity, builder)
     }
 }
