@@ -14,7 +14,8 @@ class SlideWatcherApplication @Autowired constructor(
         private val config: Config) : CommandLineRunner {
 
     override fun run(vararg args: String?) {
-        watcher.watchDir(config.dirToWatch.first())
+        watcher.scanDir(config.dirToWatch)
+        watcher.watchDir(config.dirToWatch)
     }
 
 }

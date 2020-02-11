@@ -2,24 +2,31 @@ package com.patho.slidewatcher.service
 
 import com.google.gson.Gson
 import com.patho.slidewatcher.model.ScannedCase
+import com.patho.slidewatcher.model.SlideInfoResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.*
 import org.springframework.stereotype.Service
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
-import java.lang.Exception
+import org.springframework.web.util.UriComponentsBuilder
+import java.util.*
+
 
 @Service
 class RestService {
 
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
-    fun uploadFile(scannedCase: ScannedCase, targetURl: String, useAuthentication: Boolean = false, token: String = ""): Boolean {
+    /**
+     * Post data for scanned slides
+     */
+    fun postScannedSlide(case: ScannedCase, targetURl: String, useAuthentication: Boolean = false, token: String = ""): Boolean {
         val bodyMap: MultiValueMap<String, Any> = LinkedMultiValueMap()
-        bodyMap.add("caseID", scannedCase.caseID)
-        bodyMap.add("slides", Gson().toJson(scannedCase.scannedSlides))
+        bodyMap.add("caseID", case.caseID)
+        bodyMap.add("slides", Gson().toJson(case.scannedSlides))
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.MULTIPART_FORM_DATA
@@ -29,7 +36,7 @@ class RestService {
 
         val requestEntity: HttpEntity<MultiValueMap<String, Any>> = HttpEntity(bodyMap, headers)
 
-        logger.debug("Sending pdf (${scannedCase.caseID}) to $targetURl")
+        logger.debug("Sending pdf (${case.caseID}) to $targetURl")
 
         return try {
             val restTemplate = RestTemplate()
@@ -44,7 +51,58 @@ class RestService {
         }
     }
 
-    fun getSlideInfo(taskID: String, uniqueSlideID: String): String {
-        return ""
+    /**
+     * Remove scanned slide
+     */
+    fun removeScannedSlide(caseID: String, uniqueSlideID: String, targetURl: String, useAuthentication: Boolean = false, token: String = ""): Boolean {
+        val restTemplate = RestTemplate()
+        val headers = HttpHeaders()
+        if (useAuthentication)
+            headers.set("Authorization", token);
+
+        val params: MutableMap<String, String> = HashMap()
+        params["caseID"] = caseID
+        params["uniqueSlideID"] = uniqueSlideID
+
+        val builder = UriComponentsBuilder.fromHttpUrl(targetURl)
+                .queryParam("caseID", caseID)
+                .queryParam("uniqueSlideID", uniqueSlideID)
+
+        val entity = HttpEntity("parameters", headers)
+
+        try {
+            val result = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity, String::class.java)
+            if (result.body.isNullOrEmpty() && result.body == "success")
+                return true
+        } catch (e: RestClientException) {
+
+        }
+        return false
+    }
+
+    /**
+     * Requesting slide infos (db name = slideID)
+     */
+    fun getSlideInfo(taskID: String, uniqueSlideID: String, targetURl: String, useAuthentication: Boolean = false, token: String = ""): SlideInfoResult? {
+
+    }
+
+    private fun getRestTemplateForGetRequest(targetURl : String, useAuthentication: Boolean = false, token: String = "", caseID: String, uniqueSlideID: String): RestTemplate {
+        val restTemplate = RestTemplate()
+        val headers = HttpHeaders()
+        if (useAuthentication)
+            headers.set("Authorization", token);
+
+        val params: MutableMap<String, String> = HashMap()
+        params["caseID"] = caseID
+        params["uniqueSlideID"] = uniqueSlideID
+
+        val builder = UriComponentsBuilder.fromHttpUrl(targetURl)
+                .queryParam("caseID", caseID)
+                .queryParam("uniqueSlideID", uniqueSlideID)
+
+        val entity = HttpEntity("parameters", headers)
+
+        return restTemplate
     }
 }

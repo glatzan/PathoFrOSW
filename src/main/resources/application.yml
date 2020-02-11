@@ -11,19 +11,25 @@ spring:
           auth: false
     protocol: smtps
 slidewatcher:
-  dirToWatch:
-    - file:D:/test
-
-  uploadTarget: http://127.0.0.1:8080/rest/pdf
+  # dir to watch for new files
+  dirToWatch: X:/scann
+  # dir for slide storage
+  targetDir: Y:/
+  # endpoint for posting new scanned slides
+  scannedSlideRestEndpoint: http://127.0.0.1:8080/slide
+  # endpoint for getting infos (name) of slides
+  slideInfoRestEndpoint: http://127.0.0.1:8080/slide/info?caseID=$caseID&$uniqueSlideID
+  # endpoint for removing scanned slides
+  removeScannedSlideRestEndpoint: http://127.0.0.1:8080/slide/remove?caseID=$caseID&$uniqueSlideID
+  # use authentication
   useAuthentication: true
+  # authentication token
   authenticationToken: ""
-
+  # email addresses for errors
   errorAddresses:
     - andreas.glatz@uniklinik-freiburg.de
+  # threshold of year that are considered not 19xx
+  oldMillennialYearThreshold: 60
+  # scan interval for dirToWatch in ms (file listener not possible, not local disk)
+  scanInterval: 1000
 
-logging:
-  level:
-    root: error
-    com:
-      patho:
-        slidewatcher: DEBUG

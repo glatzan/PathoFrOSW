@@ -8,12 +8,53 @@ import org.springframework.stereotype.Service
         prefix = "slidewatcher"
 )
 class Config {
-    lateinit var dirToWatch: List<String>
+    /**
+     * dir for slide storage
+     */
+    lateinit var targetDir: String
 
-    lateinit var errorAddresses : List<String>
+    /**
+     * dir to watch for new files
+     */
+    lateinit var dirToWatch: String
 
-    var useAuthentication : Boolean = false
+    /**
+     * emai addresses for errors
+     */
+    lateinit var errorAddresses: List<String>
 
-    lateinit var authenticationToken : String
+    /**
+     * use authentication
+     */
+    var useAuthentication: Boolean = false
 
+    /**
+     * authentication token
+     */
+    lateinit var authenticationToken: String
+
+    /**
+     * endpoint for posting new scanned slides
+     */
+    lateinit var scannedSlideRestEndpoint: String
+
+    /**
+     * endpoint for getting infos (name) of slides
+     */
+    lateinit var slideInfoRestEndpoint: String
+
+    /**
+     * endpoint for removing scanned slides
+     */
+    lateinit var removeScannedSlideRestEndpoint: String
+
+    /**
+     * threshold of year that are considered not 19xx
+     */
+    var oldMillennialYearThreshold: Int = 60
+
+    /**
+     * Scan interval for dirToWatch in ms (file listener not possible, not local disk)
+     */
+    var scanInterval: Long = 1000
 }
