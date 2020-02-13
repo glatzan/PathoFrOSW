@@ -74,7 +74,7 @@ class WatcherService @Autowired constructor(
             slide.uniqueSlideID = name.substring(7, 9)
             case.scannedSlides.add(slide)
 
-            val infoRequest = restService.getSlideInfo(case.caseID, slide.uniqueSlideID, config.slideInfoRestEndpoint, config.useAuthentication, config.authenticationToken)
+            val infoRequest = restService.getSlideInfo(case.caseID, slide.uniqueSlideID)
 
             if (!infoRequest.isPresent) {
                 mailService.sendMail(config.errorAddresses.first(), "Error, could not get SlideInfo",
@@ -87,9 +87,11 @@ class WatcherService @Autowired constructor(
             val newFolder = getNewDir(name)
 
             // setting new name
-            slide.name = newFolder + newName
+            slide.name = newName
+            slide.path = newFolder + newName
+            slide.slideID = infoRequest.get().slideID
 
-            val result = restService.postScannedSlide(case, config.scannedSlideRestEndpoint, config.useAuthentication, config.authenticationToken)
+            val result = restService.postScannedSlide(case)
 
             // error on post
             if (!result) {
@@ -102,7 +104,7 @@ class WatcherService @Autowired constructor(
             } catch (e: IOException) {
                 mailService.sendMail(config.errorAddresses.first(), "Error, could move slide",
                         "Error File ${case.toJson()}, orig: ${file.absolutePath}")
-                restService.removeScannedSlide(case.caseID, slide.uniqueSlideID, config.scannedSlideRestEndpoint, config.useAuthentication, config.authenticationToken)
+                restService.removeScannedSlide(case.caseID, slide.name)
                 return
             }
         } else {

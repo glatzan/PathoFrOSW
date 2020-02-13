@@ -16,11 +16,11 @@ slidewatcher:
   # dir for slide storage
   targetDir: Y:/
   # endpoint for posting new scanned slides
-  scannedSlideRestEndpoint: http://127.0.0.1:8080/slide
+  scannedSlideRestEndpoint: http://127.0.0.1:8080/slide/add
   # endpoint for getting infos (name) of slides
   slideInfoRestEndpoint: http://127.0.0.1:8080/slide/info?caseID=$caseID&$uniqueSlideID
   # endpoint for removing scanned slides
-  removeScannedSlideRestEndpoint: http://127.0.0.1:8080/slide/remove?caseID=$caseID&$uniqueSlideID
+  removeScannedSlideRestEndpoint: http://127.0.0.1:8080/slide/remove?caseID=$caseID&$slideName
   # use authentication
   useAuthentication: true
   # authentication token

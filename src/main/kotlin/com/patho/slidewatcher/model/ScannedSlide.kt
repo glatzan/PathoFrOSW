@@ -11,6 +11,11 @@ class ScannedSlide {
     var uniqueSlideID: String = ""
 
     /**
+     * Id of the slide in database
+     */
+    var slideID: String = ""
+
+    /**
      * current name
      */
     var name: String = ""
